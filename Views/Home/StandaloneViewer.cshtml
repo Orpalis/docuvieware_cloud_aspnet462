@@ -1,0 +1,46 @@
+﻿@using aspnet_mvc_razor_app.Models.HomeViewModels
+@using PassportPDF.Api
+@using PassportPDF.Model
+
+@model StandaloneViewerViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DocuVieware - Standalone Viewer Demo.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="~/Content/standalone.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    @Html.Partial("_scripts")
+    <div style="width: 100%; height: 100%;">
+        @{
+            DocuViewareApi dvApi = PassportPDFUtils.GetDocuViewareInstance();
+
+            DocuViewareGetControlParameters parameters = new DocuViewareGetControlParameters(ASPNETUtils.GetSessionID(),
+                new DocuViewareControlState()
+                {
+                    ControlID = "DocuVieware10",
+                    RemoteIP = ASPNETUtils.GetUserHostAddress(),
+                    UserLanguages = ASPNETUtils.GetUserLanguages(),
+                    MaxUploadSize = 52428800,
+                    MaxDownloadSize = 52428800,
+                    EnableMouseModeButtons = true,
+                    EnableSelectModeButton = false,
+                    EnableFormFieldsEdition = true,
+                    DocumentURI = Request.QueryString["src"],
+                    CollapsedSnapIn = true,
+                    ShowDigitalSignatureSnapIn = true
+                }); ;
+
+            @Html.Raw(dvApi.DocuViewareGetControl(parameters).Element)
+        }
+    </div>
+</body>
+</html>

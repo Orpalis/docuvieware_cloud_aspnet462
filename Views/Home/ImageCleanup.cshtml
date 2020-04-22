@@ -1,0 +1,98 @@
+﻿@using aspnet_mvc_razor_app.Models.HomeViewModels
+@using PassportPDF.Api
+@using PassportPDF.Model
+
+@model ImageCleanupViewModel
+
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DocuVieware - Image Cleanup Demo.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="~/Content/imagecleanup.css" rel="stylesheet" type="text/css" />
+    <script>
+        function applyFilter(actionName) {
+            if (actionName) {
+                var pages = DocuViewareAPI.GetSelectedThumbnailItems("@Model.DocuViewareID");
+                var roi = DocuViewareAPI.GetSelectionAreaCoordinates("@Model.DocuViewareID");
+                if (pages.length == 0) {
+                    pages[0] = DocuViewareAPI.GetCurrentPage("@Model.DocuViewareID");
+                }
+                var params = { Pages: pages, Roi: roi };
+                DocuViewareAPI.PostCustomServerAction("@Model.DocuViewareID", true, actionName, params);
+            }
+            return false;
+        }
+
+        function OnDocuViewareAPIReady() {
+            if (typeof DocuViewareAPI !== "undefined" && DocuViewareAPI.IsInitialized("@Model.DocuViewareID")) {
+                var icon = document.createElement("svg");
+                icon.setAttribute("viewbox", "0 0 16 16");
+                icon.setAttribute("height", "100%");
+                icon.setAttribute("width", "100%");
+                icon.innerHTML = "<path d='M13 5.5c0 0.828-0.672 1.5-1.5 1.5s-1.5-0.672-1.5-1.5c0-0.828 0.672-1.5 1.5-1.5s1.5 0.672 1.5 1.5z'></path><path d='M0 3v10c0 0.55 0.45 1 1 1h6v-1h-5.998c-0.001-0.001-0.001-0.001-0.002-0.002v-9.996c0.001-0.001 0.001-0.001 0.002-0.002h5.998v-1h-6c-0.55 0-1 0.45-1 1z'></path><path d='M15 2h-6v-2h-1v16h1v-2h6c0.55 0 1-0.45 1-1v-10c0-0.55-0.45-1-1-1zM15 12.998c-0.001 0.001-0.001 0.001-0.002 0.002h-5.998v-1h5v-5l-3.5 3h-1l-0.5-0.625v-6.375h5.998c0.001 0.001 0.001 0.001 0.002 0.002v9.996z'></path><path d='M2 11v1h5v-5.125l-1.5-1.875z'></path>";
+
+                var template = document.getElementById("snapInContent");
+                var panel = template.innerHTML;
+                while (template.hasChildNodes()) {
+                    template.removeChild(template.lastChild);
+                }
+
+                DocuViewareAPI.AddCustomSnapIn("@Model.DocuViewareID", "imageCleanup", "Image Cleanup", icon, panel, true);
+
+                DocuViewareAPI.RegisterOnNewDocumentLoaded("@Model.DocuViewareID", function () {
+                    DocuViewareAPI.SelectSnapIn("@Model.DocuViewareID", "imageCleanup");
+                });
+            }
+            else {
+                setTimeout(function () { OnDocuViewareAPIReady() }, 10);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            OnDocuViewareAPIReady();
+        }, false);
+    </script>
+</head>
+<body>
+    @Html.Partial("_scripts")
+    @{
+        DocuViewareApi dvApi = PassportPDFUtils.GetDocuViewareInstance();
+
+        DocuViewareGetControlParameters parameters = new DocuViewareGetControlParameters(ASPNETUtils.GetDocuViewareSessionID(),
+            new DocuViewareControlState
+            {
+                ControlID = Model.DocuViewareID,
+                RemoteIP = ASPNETUtils.GetUserHostAddress(),
+                UserLanguages = ASPNETUtils.GetUserLanguages(),
+                ForceScrollBars = false,
+                AllowedExportFormats = "*",
+                ShowRedactionSnapIn = false,
+                ShowAnnotationsSnapIn = false,
+                EnableRotateButtons = false,
+                EnableMultipleThumbnailSelection = true,
+                EnableTwainAcquisitionButton = true,
+                EnableFormFieldsEdition = false,
+                EnableThumbnailDragDrop = true,
+                MaxUploadSize = 52428800,
+                MaxDownloadSize = 52428800,
+                DocumentURI = "https://www.docuvieware-demo.com/download_document.aspx?src=multipage.tif",
+                ShowAnnotationsCommentsSnapIn = false,
+                CollapsedSnapIn = true
+            });
+
+        @Html.Raw(dvApi.DocuViewareGetControl(parameters).Element)
+    }
+    <div id="snapInContent" style="display: none">
+        @Html.Raw(Model.SnapInHtmlContent)
+    </div>
+</body>
+</html>

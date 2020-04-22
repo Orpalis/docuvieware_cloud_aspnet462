@@ -1,0 +1,210 @@
+﻿@using aspnet_mvc_razor_app.Models.HomeViewModels
+@using Newtonsoft.Json
+@using PassportPDF.Api
+@using PassportPDF.Model
+
+@model GalleryViewModel
+
+@functions {
+    private const int THUMBNAIL_WIDTH = 120;
+    private const int THUMBNAIL_HEIGHT = 170;
+
+    struct FileInfo
+    {
+        public string Format;
+        public int PageCount;
+        public byte[] ThumbnailData;
+        public string URI;
+        public string FileName;
+    }
+}
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DocuVieware - Gallery Demo.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/jquery-3.5.0.min.js"></script>
+    <link href="~/Content/gallery.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    @Html.Partial("_scripts")
+    <div id="gallery">
+        <div id="gallery_icon_container">
+            <div id="gallery_icon">
+                <svg height="100%" width="100%" viewBox="0 0 512 512"><path d="M382.5,139.5v-70h-62v-69h-261v372h62v70h70v70h261v-373H382.5z M81.5,350.5v-328h216v328H81.5z M144.5,420.5v-48h176v-280 h40v328H144.5z M430.5,489.5h-216v-47h168v-281h48V489.5z" /><rect x="104.5" y="194.5" width="168" height="23" /><rect x="103.5" y="243.5" width="168" height="23" /><rect x="104.5" y="292.5" width="84" height="23" /><path d="M104.5,50.5v117h168v-117H104.5z M250.5,146.5h-123v-73h123V146.5z" /></svg>
+            </div>
+            <span id="gallery_header_title">Document Gallery</span>
+        </div>
+        <div id="gallery_panel_content">
+            <div id="gallery_container">
+                @{
+                    Dictionary<string, string> DOCUEMENTS_URI = new Dictionary<string, string> {
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=01_CNESmag_SpecialRosetta.pdf", " 01_CNESmag_SpecialRosetta.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=02_Beethoven_Symphony_No_5_cello_bass.pdf", " 02_Beethoven_Symphony_No_5_cello_bass.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=03_Classeur_Photos.pdf", " 03_Classeur_Photos.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=04_Airbus_A350XWB_shapping_efficiency.pdf", " 04_Airbus_A350XWB_shapping_efficiency.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=05_Contrat_Location_Saison.pdf", " 05_Contrat_Location_Saison.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=06_Devis_perf_energetique.pdf", " 06_Devis_perf_energetique.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=07_French_Wine_Guide.pdf", " 07_French_Wine_Guide.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=08_Grow_chili_pepper.pdf", " 08_Grow_chili_pepper.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=09_Math_stats_sheet.pdf", " 09_Math_stats_sheet.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=10_P020140721507223212132.pdf", " 10_P020140721507223212132.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=11_pdf_reference_1-7.pdf", " 11_pdf_reference_1-7.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=12_planche_10_pages.pdf", " 12_planche_10_pages.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=13_Plan_general_en.pdf", " 13_Plan_general_en.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=14_Recette_cassoulet.pdf", " 14_Recette_cassoulet.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=15_the-big-free-edition-2014.pdf", " 15_the-big-free-edition-2014.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=165873-yle-sample-papers-flyers-vol-1.pdf", " 165873-yle-sample-papers-flyers-vol-1.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Beautiful_Testing_ch10.pdf", " Beautiful_Testing_ch10.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=BlendModes-cmyk622.pdf", " BlendModes-cmyk622.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Bretagne1.j2k", " Bretagne1.j2k"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Cevennes1.j2k", " Cevennes1.j2k"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=cherry.webp", " cherry.webp"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=CMYKTest.jpg", " CMYKTest.jpg"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Color_4_PCX.pcx", " Color_4_PCX.pcx"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=docuvieware-msdn-new-artwork.psd", " docuvieware-msdn-new-artwork.psd"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=DSC0733.NEF", " DSC0733.NEF"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=fax2d.tif", " fax2d.tif"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=feet.wbmp", " feet.wbmp"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=g3test.g3", " g3test.g3"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Gear Sample-iss4.DXF", " Gear Sample-iss4.DXF"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=GraphicsTest.pdf", " GraphicsTest.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Guide_de_la_signature_électronique64.pdf", " Guide_de_la_signature_électronique64.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=IMAG0091.jpg", " IMAG0091.jpg"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=index.html", " index.html"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=invoice.pdf", " invoice.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Invoice_template_forms.pdf", " Invoice_template_forms.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=leave_requests.pdf", " leave_requests.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Le_passage_de_Lorem_Ipsum_standard.docx", " Le_passage_de_Lorem_Ipsum_standard.docx"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Le_passage_de_Lorem_Ipsum_standardodt.odt", " Le_passage_de_Lorem_Ipsum_standardodt.odt"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=License_agreement_for_GdPicture.NET 14.rtf", " License_agreement_for_GdPicture.NET 14.rtf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=MeadowTrail03_sm.hdr", " MeadowTrail03_sm.hdr"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=MR-MONO2-8-16x-heart.dcm", " MR-MONO2-8-16x-heart.dcm"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=multipage.tif", " multipage.tif"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=multipage_zf42013.jb2", " multipage_zf42013.jb2"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=presentation_pdf_day.pptx", " presentation_pdf_day.pptx"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=présentation_PDF_days_france_orpalis.docx", " présentation_PDF_days_france_orpalis.docx"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=rai-2.jpg", " rai-2.jpg"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Seyes.emf", " Seyes.emf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=st_exupery_le_petit_prince.pdf", " st_exupery_le_petit_prince.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=tesseract.gif", " tesseract.gif"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=test_icm_adobergb.jpg", " test_icm_adobergb.jpg"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Tigers64.jp2", " Tigers64.jp2"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=unicode_text.txt", " unicode_text.txt"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Universal_Declaration_of_Human_Rights.odt", " Universal_Declaration_of_Human_Rights.odt"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=varnathoolika_River_beside.png", " varnathoolika_River_beside.png"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=vector-graphics-butterfly.WMF", " vector-graphics-butterfly.WMF"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=Worldcup.svg", " Worldcup.svg"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=XLSX_sample.xlsx", " XLSX_sample.xlsx"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=z1_Eiffel-fr-ang.pdf", " z1_Eiffel-fr-ang.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=z2_Louvre-plan-information-english.pdf", " z2_Louvre-plan-information-english.pdf"  },
+                            {"https://www.docuvieware-demo.com/download_document.aspx?src=__tiger.svg", " __tiger.svg"  }
+
+                };
+
+                    bool firstDoc = true;
+                    int i = 0;
+                    foreach (var doc in DOCUEMENTS_URI)
+                    {
+                        i++;
+                        string fileInfoPath = Path.Combine(ASPNETUtils.GetCacheDirectory(), doc.Value + ".fileInfo");
+                        FileInfo fileInfo;
+                        if (!File.Exists(fileInfoPath))
+                        {
+                            fileInfo = new FileInfo();
+                            DocumentApi documentAPI = PassportPDFUtils.GetDocumentInstance();
+                            LoadDocumentFromURIParameters previewParameters = new LoadDocumentFromURIParameters(doc.Key)
+                            {
+                                GetPreview = true,
+                                ThumbnailWidth = THUMBNAIL_WIDTH,
+                                ThumbnailHeight = THUMBNAIL_HEIGHT,
+                                ThumbnailFitToPageSize = false,
+                                FileName = doc.Value
+                            };
+                            DocumentLoadResponse documentLoadResponse = documentAPI.DocumentLoadFromURI(previewParameters);
+                            if (documentLoadResponse.Error == null)
+                            {
+                                fileInfo.Format = documentLoadResponse.DocumentFormat.ToString().Replace("DocumentFormat", "");
+                                fileInfo.PageCount = documentLoadResponse.PageCount;
+                                fileInfo.ThumbnailData = documentLoadResponse.ThumbnailData;
+                                fileInfo.URI = doc.Key;
+                                fileInfo.FileName = doc.Value;
+                            }
+                            documentAPI.DocumentCloseAsync(new DocumentCloseParameters(documentLoadResponse.FileId));
+                            File.WriteAllText(fileInfoPath, JsonConvert.SerializeObject(fileInfo));
+                        }
+                        else
+                        {
+                            using (StreamReader file = File.OpenText(fileInfoPath))
+                            {
+                                JsonSerializer serializer = new JsonSerializer();
+                                fileInfo = (FileInfo)serializer.Deserialize(file, typeof(FileInfo));
+                            }
+                        }
+                        if (!string.IsNullOrWhiteSpace(fileInfo.Format) && fileInfo.Format != "UNKNOWN")
+                        {
+                            <div class="thumbnail_container@(firstDoc ? " item-selected" : "")">
+                                <input name="ctl@(i.ToString().PadLeft(2, '0'))" class="thumbnail_button" src="@string.Format("data:image/png;base64,{0}",  Convert.ToBase64String(fileInfo.ThumbnailData != null ? fileInfo.ThumbnailData : new byte[] { 0 }/*todo: use generic icon data here*/))"
+                                       style="display: inline-block; outline: none; height: 170px; width: 120px;" onclick="loadDocument('@fileInfo.URI', '@fileInfo.FileName', this);return false;" type="image" />
+                                @if (firstDoc)
+                                {
+                                    firstDoc = false;
+                                }
+                                <div>
+                                    @fileInfo.Format document<br />@fileInfo.PageCount page@(fileInfo.PageCount > 1 ? "s" : "")
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    <div id="viewer_container">
+        @{
+            DocuViewareApi dvApi = PassportPDFUtils.GetDocuViewareInstance();
+
+            DocuViewareGetControlParameters controlParameters = new DocuViewareGetControlParameters(ASPNETUtils.GetSessionID(),
+                new DocuViewareControlState()
+                {
+                    ControlID = Model.DocuViewareID,
+                    RemoteIP = ASPNETUtils.GetUserHostAddress(),
+                    UserLanguages = ASPNETUtils.GetUserLanguages(),
+                    DocumentURI = DOCUEMENTS_URI.First().Key,
+                    EnableLoadFromUriButton = false,
+                    EnableFileUploadButton = false,
+                    EnableMultipleThumbnailSelection = true,
+                    EnableMouseModeButtons = true,
+                    EnableSelectModeButton = false,
+                    EnableTwainAcquisitionButton = false,
+                    EnableFormFieldsEdition = false,
+                    DisableDownloadProgress = true,
+                    CollapsedSnapIn = true,
+                    MaxUploadSize = 52428800,
+                    MaxDownloadSize = 52428800,
+                });
+
+            @Html.Raw(dvApi.DocuViewareGetControl(controlParameters).Element)
+        }
+    </div>
+    <script>
+        function loadDocument(uri, fileName, elem) {
+            console.log("loading " + fileName + " from uri: " + uri);
+            DocuViewareAPI.LoadFromUriEx('@Model.DocuViewareID', uri, fileName, function () { resetButtons(); elem.parentElement.className += " item-selected"; }, function () { resetButtons(); });
+        }
+        function resetButtons() {
+            for (var i = 0; i < document.getElementById("gallery_container").children.length; i++) {
+                document.getElementById("gallery_container").children[i].className = "thumbnail_container";
+            }
+        }
+    </script>
+</body>
+</html>

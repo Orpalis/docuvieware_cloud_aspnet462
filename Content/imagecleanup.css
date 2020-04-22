@@ -1,0 +1,38 @@
+﻿html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#container .filter {
+    vertical-align: middle;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    cursor: pointer;
+}
+
+    #container .filter:nth-child(even) {
+        background-color: #EEEEEE;
+    }
+
+#container .icon {
+    width: 75px;
+    height: 75px;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+#container .filters {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+#container .filter_name {
+    line-height: 75px;
+    vertical-align: top;
+}

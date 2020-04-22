@@ -1,0 +1,72 @@
+﻿@using aspnet_mvc_razor_app.Models
+@using aspnet_mvc_razor_app.Models.HomeViewModels
+@using PassportPDF.Api
+@using PassportPDF.Model
+
+@model TwainViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DocuVieware - TWAIN Acquisition Demo.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="~/Content/twain_acquisition.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    @Html.Partial("_scripts")
+    <div id="description_container">
+        <!-- Demo explanations -->
+        <p>
+            TWAIN acquisition can be done from the dedicated snap-in but also from a dialog window triggered by a dedicated toolbar button.<br />
+            This demo application shows both options.
+        </p>
+        <p>The very first time, DocuVieware will require the installation of a small software to connect to the TWAIN devices. This is a one-time step, once it has been installed it is silently started with Windows.</p>
+        <p>DocuVieware will then be able to trigger the device driver window so you can choose the acquisition settings you need.</p>
+        <p>Once the acquisition process is complete, you can handle the document like any other supported document format and click the "Generate PDF" button to download the resulat as a PDF/A-1b standard compliant document allowing long term archiving.</p>
+    </div>
+    <div id="application_container">
+        <div id="toolbar_container">
+            <input type="button" value="Generate PDF/A" onclick="location.href='@Url.Action("TwainGeneratePdfA", "Home", new TwainGeneratePdfAParameters{ ControlId = Model.DocuViewareID, SessionId = ASPNETUtils.GetSessionID() })'" />
+        </div>
+        <div id="viewer_container">
+            @{
+                DocuViewareApi dvApi = PassportPDFUtils.GetDocuViewareInstance();
+
+                DocuViewareGetControlParameters parameters = new DocuViewareGetControlParameters(ASPNETUtils.GetSessionID(),
+                    new DocuViewareControlState
+                    {
+                        ControlID = Model.DocuViewareID,
+                        RemoteIP = ASPNETUtils.GetUserHostAddress(),
+                        UserLanguages = ASPNETUtils.GetUserLanguages(),
+                        ForceScrollBars = false,
+                        AllowedExportFormats = "*",
+                        MaxUploadSize = 268435456,
+                        MaxDownloadSize = 52428800,
+                        EnableMouseModeButtons = true,
+                        EnableSelectModeButton = false,
+                        EnableFileUploadButton = false,
+                        EnableLoadFromUriButton = false,
+                        EnablePrintButton = true,
+                        EnableSaveButton = true,
+                        ShowThumbnailsSnapIn = true,
+                        ShowBookmarksSnapIn = false,
+                        ShowTextSearchSnapIn = false,
+                        ShowAnnotationsSnapIn = true,
+                        EnableTwainAcquisitionButton = true,
+                        EnableThumbnailDragDrop = true,
+                        ShowAnnotationsCommentsSnapIn = false,
+                        CollapsedSnapIn = true
+                    });
+
+                @Html.Raw(dvApi.DocuViewareGetControl(parameters).Element)
+            }
+        </div>
+    </div>
+</body>
+</html>
